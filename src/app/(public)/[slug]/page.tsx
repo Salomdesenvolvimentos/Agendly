@@ -129,7 +129,7 @@ export default function ProviderPublicPage() {
         total_amount: selectedService.price
       }
 
-      await createBooking(bookingPayload)
+      await createBooking(provider.id, bookingData.customer_id, bookingPayload)
       
       alert('Agendamento solicitado com sucesso! Entraremos em contato em breve.')
       setShowBookingModal(false)

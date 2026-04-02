@@ -1,11 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { UserCircleIcon, EnvelopeIcon, LockClosedIcon } from '@heroicons/react/24/outline'
 
-export default function CustomerSignInPage() {
+function CustomerSignInInner() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [isLogin, setIsLogin] = useState(true)
@@ -250,5 +250,13 @@ export default function CustomerSignInPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function CustomerSignInPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <CustomerSignInInner />
+    </Suspense>
   )
 }

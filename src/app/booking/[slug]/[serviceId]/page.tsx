@@ -331,7 +331,7 @@ export default function BookingPage() {
                     Resumo do agendamento
                   </p>
                   <p className="text-gray-600">
-                    {format(new Date(selectedDate), 'dd/MM/yyyy')} às {selectedTime}
+                    {format(new Date(selectedDate || ''), 'dd/MM/yyyy')} às {selectedTime || ''}
                   </p>
                   <p className="text-2xl font-bold text-primary-600 mt-2">
                     R$ {service.price.toFixed(2)}

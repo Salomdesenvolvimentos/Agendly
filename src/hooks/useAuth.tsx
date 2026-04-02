@@ -11,9 +11,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    async function loadUser() {
+    const loadUser = async () => {
       try {
-        const currentUser = await getCurrentUser()
+        const auth = await import('@/lib/auth')
+        const currentUser = await auth.getCurrentUser()
         setUser(currentUser)
       } catch (error) {
         console.error('Error loading user:', error)
@@ -24,8 +25,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     loadUser()
 
-    const subscription = onAuthStateChange((user) => {
-      setUser(user)
+    const setupAuth = async () => {
+      const subscription = await onAuthStateChange((user) => {
+        setUser(user)
+      })
+      return subscription
+    }
+
+    let subscription: any = null
+    setupAuth().then(sub => {
+      subscription = sub
     })
 
     return () => {

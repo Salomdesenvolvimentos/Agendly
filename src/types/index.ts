@@ -140,7 +140,7 @@ export interface ServiceFormData {
   description: string
   price: number
   duration: number
-  image?: File
+  image?: File | string | null
 }
 
 export interface BookingFormData {

@@ -20,7 +20,7 @@ export default function ServicesPage() {
     description: '',
     price: 0,
     duration: 30,
-    image: ''
+    image: undefined
   })
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [imagePreview, setImagePreview] = useState<string>('')
@@ -80,17 +80,26 @@ export default function ServicesPage() {
     }
 
     try {
-      let imageUrl = formData.image
+      let imageUrl: string | undefined = undefined
       
       // Se há uma imagem para upload
       if (imageFile) {
         // TODO: Implementar upload para serviço de armazenamento
         // Por enquanto, usar data URL
         imageUrl = imagePreview
+      } else if (formData.image && typeof formData.image === 'string') {
+        // Se já existe uma imagem string
+        imageUrl = formData.image
+      } else if (formData.image && formData.image instanceof File) {
+        // Se já existe uma imagem File
+        imageUrl = URL.createObjectURL(formData.image)
       }
 
       const serviceData = {
-        ...formData,
+        name: formData.name,
+        description: formData.description,
+        price: formData.price,
+        duration: formData.duration,
         image: imageUrl
       }
 
@@ -110,7 +119,7 @@ export default function ServicesPage() {
         description: '',
         price: 0,
         duration: 30,
-        image: ''
+        image: undefined
       })
       setImageFile(null)
       setImagePreview('')
@@ -127,7 +136,7 @@ export default function ServicesPage() {
       description: service.description,
       price: service.price,
       duration: service.duration,
-      image: service.image || ''
+      image: service.image ? undefined : undefined
     })
     setImagePreview(service.image || '')
     setImageFile(null)
@@ -350,7 +359,7 @@ export default function ServicesPage() {
                       description: '',
                       price: 0,
                       duration: 30,
-                      image: ''
+                      image: undefined
                     })
                     setImageFile(null)
                     setImagePreview('')
