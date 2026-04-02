@@ -84,21 +84,13 @@ export async function getCurrentUser(): Promise<User | null> {
     
     if (!user) return null
 
-    // Buscar dados adicionais do usuário na tabela users
-    const { data: userData, error } = await supabase
-      .from('users')
-      .select('*')
-      .eq('id', user.id)
-      .single()
-
-    if (error || !userData) return null
-
+    // Retornar dados básicos do usuário sem buscar na tabela users
     return {
-      id: userData.id,
-      email: userData.email,
-      name: userData.name,
-      role: userData.role,
-      created_at: userData.created_at,
+      id: user.id,
+      email: user.email || '',
+      name: user.user_metadata?.name || user.email?.split('@')[0] || '',
+      role: user.user_metadata?.role || 'customer',
+      created_at: user.created_at,
     }
   } catch (error) {
     console.error('Error getting current user:', error)
