@@ -176,7 +176,6 @@ export default function ServicesPage() {
         </div>
         <button
           onClick={() => {
-            alert('Botão clicado!')
             console.log('Adicionar Serviço clicked')
             setShowModal(true)
           }}
@@ -242,7 +241,6 @@ export default function ServicesPage() {
                     <div className="flex items-center space-x-2">
                       <button
                         onClick={() => {
-                          alert('Editar serviço clicado!')
                           console.log('Edit service clicked:', service)
                           handleEdit(service)
                         }}
