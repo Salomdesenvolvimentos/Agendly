@@ -1,9 +1,9 @@
 'use client'
 
-import { useState, useEffect, useRef, Suspense } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { usePathname, useSearchParams } from 'next/navigation'
 
-function PageLoadingInner() {
+export function usePageLoading() {
   const [isLoading, setIsLoading] = useState(false)
   const pathname = usePathname()
   const searchParams = useSearchParams()
@@ -36,8 +36,4 @@ function PageLoadingInner() {
   }, [pathname, searchParams])
 
   return isLoading
-}
-
-export function usePageLoading() {
-  return <Suspense fallback={null}><PageLoadingInner /></Suspense>
 }
