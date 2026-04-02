@@ -1,0 +1,176 @@
+import { supabase } from './supabase'
+import { Provider, ProviderFormData } from '@/types'
+
+export async function createProvider(userId: string, data: ProviderFormData) {
+  try {
+    // Gerar slug unico
+    const slug = generateSlug(data.name, data.last_name)
+    
+    const { data: provider, error } = await supabase
+      .from('providers')
+      .insert({
+        user_id: userId,
+        name: data.name,
+        last_name: data.last_name,
+        whatsapp: data.whatsapp,
+        address: data.address,
+        category: data.category,
+        profile_image: data.profile_image,
+        cover_image: data.cover_image || null,
+        slug,
+        max_simultaneous: 1,
+        professionals_per_period: 1,
+      })
+      .select()
+      .single()
+
+    if (error) throw error
+
+    // Criar configuracoes padrao
+    await supabase
+      .from('provider_settings')
+      .insert({
+        provider_id: provider.id,
+        require_payment: false,
+        payment_type: 'none',
+        timezone: 'America/Sao_Paulo',
+      })
+
+    return { data: provider, error: null }
+  } catch (error) {
+    console.error('Error creating provider:', error)
+    return { data: null, error: error as Error }
+  }
+}
+
+export async function getProviderByUserId(userId: string) {
+  try {
+    const { data, error } = await supabase
+      .from('providers')
+      .select('*')
+      .eq('user_id', userId)
+      .single()
+
+    // Se nao encontrar provider, retorna null sem tratar como erro
+    if (error && error.code === 'PGRST116') {
+      return { data: null, error: null }
+    }
+
+    if (error) throw error
+
+    return { data, error: null }
+  } catch (error) {
+    console.error('Error getting provider:', error)
+    return { data: null, error: error as Error }
+  }
+}
+
+export async function getProviderBySlug(slug: string) {
+  try {
+    const { data, error } = await supabase
+      .from('providers')
+      .select('*')
+      .eq('slug', slug)
+      .single()
+
+    if (error && error.code !== 'PGRST116') throw error
+
+    return { data, error: error as Error }
+  } catch (error) {
+    console.error('Error getting provider by slug:', error)
+    return { data: null, error: error as Error }
+  }
+}
+
+export async function updateProvider(providerId: string, data: Partial<ProviderFormData>) {
+  try {
+    const updateData: any = {}
+    
+    if (data.name) updateData.name = data.name
+    if (data.last_name) updateData.last_name = data.last_name
+    if (data.whatsapp) updateData.whatsapp = data.whatsapp
+    if (data.address) updateData.address = data.address
+    if (data.category) updateData.category = data.category
+    if (data.profile_image) updateData.profile_image = data.profile_image
+    if (data.cover_image !== undefined) updateData.cover_image = data.cover_image
+
+    // Se mudou o nome, atualizar o slug
+    if (data.name || data.last_name) {
+      const currentProvider = await getProviderById(providerId)
+      if (currentProvider.data) {
+        const newName = data.name || currentProvider.data.name
+        const newLastName = data.last_name || currentProvider.data.last_name
+        updateData.slug = generateSlug(newName, newLastName)
+      }
+    }
+
+    const { data: provider, error } = await supabase
+      .from('providers')
+      .update(updateData)
+      .eq('id', providerId)
+      .select()
+      .single()
+
+    if (error) throw error
+
+    return { data: provider, error: null }
+  } catch (error) {
+    console.error('Error updating provider:', error)
+    return { data: null, error: error as Error }
+  }
+}
+
+export async function getProviderById(providerId: string) {
+  try {
+    const { data, error } = await supabase
+      .from('providers')
+      .select('*')
+      .eq('id', providerId)
+      .single()
+
+    if (error && error.code !== 'PGRST116') throw error
+
+    return { data, error: error as Error }
+  } catch (error) {
+    console.error('Error getting provider by ID:', error)
+    return { data: null, error: error as Error }
+  }
+}
+
+export async function updateProviderCapacity(
+  providerId: string,
+  maxSimultaneous: number,
+  professionalsPerPeriod: number
+) {
+  try {
+    const { data, error } = await supabase
+      .from('providers')
+      .update({
+        max_simultaneous: maxSimultaneous,
+        professionals_per_period: professionalsPerPeriod,
+      })
+      .eq('id', providerId)
+      .select()
+      .single()
+
+    if (error) throw error
+
+    return { data, error: null }
+  } catch (error) {
+    console.error('Error updating provider capacity:', error)
+    return { data: null, error: error as Error }
+  }
+}
+
+// Funcao auxiliar para gerar slug
+function generateSlug(name: string, lastName: string): string {
+  const base = `${name}-${lastName}`
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9-]/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '')
+  
+  return base
+}
